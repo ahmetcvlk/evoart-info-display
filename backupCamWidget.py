@@ -10,7 +10,7 @@ class BackupCamWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initUI()
-        self.camera_index = 1  # Kamera indeksi (birden fazla kamera varsa değiştirilebilir)
+        self.camera_index = 0  # Kamera indeksi (birden fazla kamera varsa değiştirilebilir)
         self.camera = None
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_frame)
