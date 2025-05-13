@@ -1,5 +1,5 @@
 import sys
-import cv2
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QLabel, QWidget, QGridLayout
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QImage,QPixmap,QKeyEvent
@@ -24,7 +24,7 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.main_layout)
 
         self.harita_widget = MapWidget()
-        self.harita_widget.update_gps(41.509444, 41.509444)
+        self.harita_widget.update_gps(41.50944, 36.115)
         self.main_layout.addWidget(self.harita_widget, 0, 0, 3, 3)
         
 
