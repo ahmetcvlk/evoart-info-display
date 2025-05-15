@@ -116,7 +116,7 @@ class MapWidget(QWidget):
         self.layout = QVBoxLayout(self)
 
         self.map_label = QLabel(self)
-        self.map_pixmap = QPixmap("traffic-signs/map.png")  # Harita görselini yüklüyoruz
+        self.map_pixmap = QPixmap("images/main/map.png")  # Harita görselini yüklüyoruz
         self.map_label.setPixmap(self.map_pixmap)
         self.layout.addWidget(self.map_label)
 
