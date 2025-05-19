@@ -7,13 +7,17 @@ from PyQt5.QtGui import QPixmap, QImage
 import cv2
 
 class BackupCamWidget(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, frame_provider, parent=None):
         super().__init__(parent)
+        self.frame_provider = frame_provider
+        self.frame_provider.frame_ready.connect(self.update_frame)
         self.initUI()
-        self.camera_index = 0  # Kamera indeksi (birden fazla kamera varsa değiştirilebilir)
-        self.camera = None
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_frame)
+
+
+        # self.camera_index = 0  # Kamera indeksi (birden fazla kamera varsa değiştirilebilir)
+        # self.camera = None
+        # self.timer = QTimer(self)
+        # self.timer.timeout.connect(self.update_frame)
         
     def initUI(self):
         # Widget için layout oluştur
@@ -22,7 +26,14 @@ class BackupCamWidget(QWidget):
         # Kamera görüntüsünü gösterecek label
         self.cameraLabel = QLabel()
         self.cameraLabel.setAlignment(Qt.AlignCenter)
-        self.layout.addWidget(self.cameraLabel)
+        self.layout.addWidget(self.cameraLabel,stretch=3)
+
+        self.cam_info_label = QLabel(self)
+        self.cam_info_label.setStyleSheet(
+            "font-size: 18px; color: yellow; background-color: rgba(0,0,0,180); padding: 10px; border-radius: 5px;")
+        self.cam_info_label.setMaximumHeight(40)
+        self.cam_info_label.setText("Geri görüş kamerası kapalı.")
+        self.layout.addWidget(self.cam_info_label,stretch=0)
         
         
         
@@ -31,46 +42,28 @@ class BackupCamWidget(QWidget):
         self.setMinimumSize(320, 240)
         
     def start_camera(self):
-        """Kamera yakalamayı başlat"""
-        try:
-            self.camera = cv2.VideoCapture(self.camera_index)
-            if not self.camera.isOpened():
-                return False
-                
-            self.timer.start(30)  # 30ms - yaklaşık 33 FPS
-            return True
-        except Exception as e:
-            print(f"Kamera başlatma hatası: {e}")
-            return False
+        """FrameProvider başlatılır."""
+        if not self.frame_provider.isRunning():
+            self.cam_info_label.setText("Geri görüş kamerası açık.")
+            self.frame_provider.start()
+
     
     def stop_camera(self):
-        """Kamera yakalamayı durdur"""
-        if self.timer.isActive():
-            self.timer.stop()
-        if self.camera is not None and self.camera.isOpened():
-            self.camera.release()
+        """FrameProvider durdurulur."""
+        if self.frame_provider.isRunning():
+            self.cam_info_label.setText("Geri görüş kamerası kapalı.")
+            self.frame_provider.stop()
     
-    def update_frame(self):
-        """Kameradan yeni kare al ve göster"""
-        if self.camera is None or not self.camera.isOpened():
-            return
-        
-        ret, frame = self.camera.read()
-        if not ret:
-            self.stop_camera()
-            return
-        
-        # OpenCV BGR formatından Qt QImage formatına dönüştür
+    def update_frame(self, frame):
+        """Yeni gelen kareyi göster."""
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         h, w, ch = rgb_frame.shape
         bytes_per_line = ch * w
-        
         q_img = QImage(rgb_frame.data, w, h, bytes_per_line, QImage.Format_RGB888)
         pixmap = QPixmap.fromImage(q_img)
-        
-        # Label'a ölçeklendirilmiş olarak yerleştir
-        scaled_pixmap = pixmap.scaled(self.cameraLabel.width(), self.cameraLabel.height(), 
-                                     Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+        scaled_pixmap = pixmap.scaled(self.cameraLabel.width(), self.cameraLabel.height(),
+                                      Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.cameraLabel.setPixmap(scaled_pixmap)
     
     def resizeEvent(self, event):
@@ -89,18 +82,3 @@ class BackupCamWidget(QWidget):
         super().closeEvent(event)
 
 
-# Test için
-if __name__ == "__main__":
-    import sys
-    from PyQt5.QtWidgets import QApplication
-    
-    app = QApplication(sys.argv)
-    widget = BackupCamWidget()
-    widget.show()
-    
-    # Kamerayı başlat
-    success = widget.start_camera()
-    if not success:
-        print("Kamera başlatılamadı. Lütfen kamera bağlantısını kontrol edin.")
-    
-    sys.exit(app.exec_())

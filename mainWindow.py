@@ -43,13 +43,18 @@ class MainWindow(QMainWindow):
             "handicapped_parking": "images/traffic-signs/handicapped_parking.jpg"
         }
 
+        # Kamera ve model
+        self.front_provider = FrameProvider(0)
+        # self.rear_provider = FrameProvider(0)
+        self.model_sign = ModelSign("models/best.pt")
+
         # Harita
         self.harita_widget = MapWidget()
-        self.harita_widget.update_gps(41.50944, 36.115)
+        self.harita_widget.update_gps(41.509722, 36.115833)
         self.main_layout.addWidget(self.harita_widget, 0, 0, 3, 3)
 
         # Geri görüş
-        self.geri_gorus_widget = BackupCamWidget()
+        self.geri_gorus_widget = BackupCamWidget(self.front_provider)
         # self.geri_gorus_widget.start_camera()
         self.main_layout.addWidget(self.geri_gorus_widget, 0, 3, 3, 3)
 
@@ -63,15 +68,13 @@ class MainWindow(QMainWindow):
         self.tabela_widget = SignWidget()
         self.main_layout.addWidget(self.tabela_widget, 3, 3, 2, 3)
 
-        # Kamera ve model
-        self.frame_provider = FrameProvider()
-        self.model_sign = ModelSign("models/best.pt")
-
-        self.frame_provider.frame_ready.connect(self.model_sign.update_frame)
+        
+        self.front_provider.frame_ready.connect(self.model_sign.update_frame)
         self.model_sign.result_ready.connect(self.handle_signs)
 
-        self.frame_provider.start()
+        # self.front_provider.start()
         self.model_sign.start()
+        # self.rear_provider.start()
 
     def handle_signs(self, class_ids):
         for class_id in class_ids:
@@ -83,6 +86,12 @@ class MainWindow(QMainWindow):
                     self.tabela_widget.yeni_tabela_ekle(icon_path)
             except Exception as e:
                 print(f"Hata: {e}")
+
+    def closeEvent(self, event):
+        # self.front_provider.stop()
+        # self.rear_provider.stop()
+        self.model_sign.stop()
+        super().closeEvent(event)
 
 
 def main():

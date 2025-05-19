@@ -1,76 +1,3 @@
-# import sys
-# from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout
-# from PyQt5.QtGui import QPixmap, QPainter, QColor
-# from PyQt5.QtCore import Qt
-
-# class MapWidget(QWidget):
-#     def __init__(self):
-#         super().__init__()
-#         self.layout = QVBoxLayout(self)
-        
-#         self.map_label = QLabel(self)
-#         self.map_pixmap = QPixmap("traffic-signs/map.png")  # Harita görselini yüklüyoruz
-#         self.map_label.setPixmap(self.map_pixmap)
-#         self.layout.addWidget(self.map_label)
-
-     
-
-
-#         # Harita köşe koordinatları (decimal degree)
-#         self.lat1, self.lon1 = 41.51167, 36.11667  # sol üst (enlem, boylam)
-#         self.lat2, self.lon2 = 41.50889, 36.11389  # sağ alt (enlem, boylam)
-
-#         # Harita boyutları
-#         self.map_width = self.map_pixmap.width()   # 821 px
-#         print(self.map_width)
-#         self.map_height = self.map_pixmap.height()  # 486 px
-#         print(self.map_height)
-
-#     def gps_to_pixel(self, lat, lon):
-#         """GPS -> piksel (x, y)"""
-#         x = ((lon - self.lon1) / (self.lon2 - self.lon1)) * self.map_width
-#         y = ((self.lat1 - lat) / (self.lat1 - self.lat2)) * self.map_height
-#         return int(x), int(y)
-
-
-
-
-
-
-
-
-
-
-
-#     def update_gps(self, lat, lon):
-#         x, y = self.gps_to_pixel(lat, lon)
-
-#         print(f"x:{x}, y:{y}")
-
-#         # Yeni bir pixmap üzerine GPS noktası çiz
-#         temp_pixmap = QPixmap(self.map_pixmap)
-#         painter = QPainter(temp_pixmap)
-#         painter.setBrush(QColor(255, 0, 0))  # Kırmızı renk
-#         painter.drawEllipse(x - 5, y - 5, 10, 10)  # GPS noktasının etrafında bir daire çizeceğiz
-#         painter.end()
-
-#         self.map_label.setPixmap(temp_pixmap)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -120,6 +47,13 @@ class MapWidget(QWidget):
         self.map_label.setPixmap(self.map_pixmap)
         self.layout.addWidget(self.map_label)
 
+        # ➕ Lat/Lon bilgisi için label
+        self.coord_label = QLabel(self)
+        self.coord_label.setStyleSheet(
+            "font-size: 18px; color: yellow; background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px")
+        self.coord_label.setMaximumHeight(40)
+        self.layout.addWidget(self.coord_label)
+
         # Harita köşe koordinatları (decimal degree)
         gps_points = [
             (41.51167, 36.11667),     # sol üst
@@ -157,14 +91,5 @@ class MapWidget(QWidget):
 
         self.map_label.setPixmap(temp_pixmap)
 
-# # --- Main çalıştırma ---
-# if __name__ == "__main__":
-#     app = QApplication(sys.argv)
-#     window = MapWidget()
-#     window.resize(900, 550)
-#     window.show()
-
-#     # Test için nokta göster
-#     window.update_gps(41.5091667, 36.1158333)  # orta nokta → x:661, y:140
-
-#     sys.exit(app.exec_())
+         # 🟦 Konum label'ını güncelle
+        self.coord_label.setText(f"Lat: {lat:.6f}, Lon: {lon:.6f}")
