@@ -11,7 +11,7 @@ class LaneWarnWidget(QWidget):
         self.setLayout(self.layout)
 
         # Başlık
-        self.baslik = QLabel("Şerit Uyarısı")
+        self.baslik = QLabel("Şerit ve Kör Nokta Uyarısı")
         self.baslik.setAlignment(Qt.AlignCenter)
         self.baslik.setStyleSheet(
             "font-weight: bold; font-size: 20px; color: white")
@@ -21,8 +21,15 @@ class LaneWarnWidget(QWidget):
         self.uyari_label = QLabel("Şu anda şeritte değilsiniz.")
         self.uyari_label.setAlignment(Qt.AlignCenter)
         self.uyari_label.setStyleSheet(
-            "font-size: 16px; color: yellow; background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px")
+            "font-size: 20px; color: yellow; background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px")
         self.layout.addWidget(self.uyari_label, stretch=3)
+
+        # Uyarı mesajları için QLabel
+        self.kor_nokta_label = QLabel("Kök noktalar boş.")
+        self.kor_nokta_label.setAlignment(Qt.AlignCenter)
+        self.kor_nokta_label.setStyleSheet(
+            "font-size: 20px; color: yellow; background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px")
+        self.layout.addWidget(self.kor_nokta_label, stretch=3)
 
         # Siyah arka plan
         self.setStyleSheet(

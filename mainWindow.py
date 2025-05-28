@@ -9,6 +9,8 @@ from laneWarnWidget import LaneWarnWidget
 from mapWidget import MapWidget
 from signWidget import SignWidget
 
+from laneDetection import LaneDetection
+
 from frameProvider import FrameProvider
 from modelSign import ModelSign
 
@@ -43,6 +45,8 @@ class MainWindow(QMainWindow):
             "handicapped_parking": "images/traffic-signs/handicapped_parking.jpg"
         }
 
+
+
         # Kamera ve model
         self.front_provider = FrameProvider(0)
         # self.rear_provider = FrameProvider(0)
@@ -55,12 +59,13 @@ class MainWindow(QMainWindow):
 
         # Geri görüş
         self.geri_gorus_widget = BackupCamWidget(self.front_provider)
-        # self.geri_gorus_widget.start_camera()
+        self.geri_gorus_widget.start_camera()
         self.main_layout.addWidget(self.geri_gorus_widget, 0, 3, 3, 3)
 
         # Şerit uyarı
         self.serit_widget = LaneWarnWidget()
-        self.serit_widget.check_lane_position(30)  # Sol şeride yaklaşma
+        self.lane_detection = LaneDetection()
+        # self.serit_widget.check_lane_position(30)  # Sol şeride yaklaşma
         self.serit_widget.show()
         self.main_layout.addWidget(self.serit_widget, 3, 0, 2, 3)
 
@@ -69,12 +74,25 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.tabela_widget, 3, 3, 2, 3)
 
         
+
+        # Connect
         self.front_provider.frame_ready.connect(self.model_sign.update_frame)
         self.model_sign.result_ready.connect(self.handle_signs)
 
-        # self.front_provider.start()
+        self.front_provider.frame_ready.connect(self.handle_lane_warning)
+
+        self.front_provider.start()
         self.model_sign.start()
         # self.rear_provider.start()
+
+    
+    def handle_lane_warning(self, frame):
+        warning = self.lane_detection.process_frame(frame)
+        self.serit_widget.uyari_label.setText(warning)
+        
+
+
+
 
     def handle_signs(self, class_ids):
         for class_id in class_ids:
@@ -88,7 +106,7 @@ class MainWindow(QMainWindow):
                 print(f"Hata: {e}")
 
     def closeEvent(self, event):
-        # self.front_provider.stop()
+        self.front_provider.stop()
         # self.rear_provider.stop()
         self.model_sign.stop()
         super().closeEvent(event)
