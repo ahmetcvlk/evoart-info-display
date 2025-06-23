@@ -13,6 +13,8 @@ from laneDetection import LaneDetection
 
 from frameProvider import FrameProvider
 from modelSign import ModelSign
+from gpsthread import GPSThread
+
 
 
 class MainWindow(QMainWindow):
@@ -49,17 +51,17 @@ class MainWindow(QMainWindow):
 
         # Kamera ve model
         self.front_provider = FrameProvider(0)
-        # self.rear_provider = FrameProvider(0)
+        self.rear_provider = FrameProvider(1)
         self.model_sign = ModelSign("models/best.pt")
 
         # Harita
         self.harita_widget = MapWidget()
-        self.harita_widget.update_gps(41.509722, 36.115833)
+        # self.harita_widget.update_gps(41.509722, 36.115833)
         self.main_layout.addWidget(self.harita_widget, 0, 0, 3, 3)
 
         # Geri görüş
-        self.geri_gorus_widget = BackupCamWidget(self.front_provider)
-        self.geri_gorus_widget.start_camera()
+        self.geri_gorus_widget = BackupCamWidget(self.rear_provider)
+        # self.geri_gorus_widget.start_camera()
         self.main_layout.addWidget(self.geri_gorus_widget, 0, 3, 3, 3)
 
         # Şerit uyarı
@@ -81,9 +83,17 @@ class MainWindow(QMainWindow):
 
         self.front_provider.frame_ready.connect(self.handle_lane_warning)
 
+        self.gps_thread = GPSThread()
+        self.gps_thread.konum_guncelle.connect(self.harita_widget.update_gps)
+        self.gps_thread.start()
+
+
         self.front_provider.start()
         self.model_sign.start()
-        # self.rear_provider.start()
+        
+
+        #geri vites
+        #self.rear_provider.start()
 
     
     def handle_lane_warning(self, frame):
@@ -115,7 +125,7 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.show()
+    window.showMaximized()
     sys.exit(app.exec_())
 
 
