@@ -25,7 +25,7 @@ class LaneWarnWidget(QWidget):
         self.layout.addWidget(self.uyari_label, stretch=3)
 
         # Uyarı mesajları için QLabel
-        self.kor_nokta_label = QLabel("Kök noktalar boş.")
+        self.kor_nokta_label = QLabel("Kör noktalar boş.")
         self.kor_nokta_label.setAlignment(Qt.AlignCenter)
         self.kor_nokta_label.setStyleSheet(
             "font-size: 20px; color: yellow; background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px")
