@@ -2,7 +2,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 import cv2
 
 
-class FrameProvider(QThread):
+class FrameProviderThread(QThread):
     frame_ready = pyqtSignal(object)
 
     def __init__(self, camera_index):

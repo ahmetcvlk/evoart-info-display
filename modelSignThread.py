@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QThread, pyqtSignal
 from ultralytics import YOLO
 
-class ModelSign(QThread):
+class ModelSignThread(QThread):
     result_ready = pyqtSignal(list)
 
     def __init__(self, model_path):

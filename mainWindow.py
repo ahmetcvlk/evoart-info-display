@@ -11,9 +11,9 @@ from signWidget import SignWidget
 
 from laneDetection import LaneDetection
 
-from frameProvider import FrameProvider
-from modelSign import ModelSign
-from gpsthread import GPSThread
+from frameProviderThread import FrameProviderThread
+from modelSignThread import ModelSignThread
+from gpsThread import GPSThread
 
 
 
@@ -50,13 +50,13 @@ class MainWindow(QMainWindow):
 
 
         # Kamera ve model
-        self.front_provider = FrameProvider(0)
-        self.rear_provider = FrameProvider(1)
-        self.model_sign = ModelSign("models/best.pt")
+        self.front_provider = FrameProviderThread(0)
+        self.rear_provider = FrameProviderThread(1)
+        self.model_sign = ModelSignThread("models/best.pt")
 
         # Harita
         self.harita_widget = MapWidget()
-        # self.harita_widget.update_gps(41.509722, 36.115833)
+        self.harita_widget.update_gps(40.7880556,29.4569444)
         self.main_layout.addWidget(self.harita_widget, 0, 0, 3, 3)
 
         # Geri görüş
@@ -83,9 +83,9 @@ class MainWindow(QMainWindow):
 
         self.front_provider.frame_ready.connect(self.handle_lane_warning)
 
-        self.gps_thread = GPSThread()
-        self.gps_thread.konum_guncelle.connect(self.harita_widget.update_gps)
-        self.gps_thread.start()
+        # self.gps_thread = GPSThread()
+        # self.gps_thread.konum_guncelle.connect(self.harita_widget.update_gps)
+        # self.gps_thread.start()
 
 
         self.front_provider.start()
@@ -93,16 +93,16 @@ class MainWindow(QMainWindow):
         
 
         #geri vites
-        #self.rear_provider.start()
+        # self.rear_provider.start()
 
     
+
+
+
     def handle_lane_warning(self, frame):
         warning = self.lane_detection.process_frame(frame)
         self.serit_widget.uyari_label.setText(warning)
         
-
-
-
 
     def handle_signs(self, class_ids):
         for class_id in class_ids:
@@ -115,11 +115,15 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print(f"Hata: {e}")
 
+
     def closeEvent(self, event):
         self.front_provider.stop()
         # self.rear_provider.stop()
         self.model_sign.stop()
         super().closeEvent(event)
+
+
+
 
 
 def main():
