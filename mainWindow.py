@@ -15,6 +15,8 @@ from frameProviderThread import FrameProviderThread
 from modelSignThread import ModelSignThread
 from gpsThread import GPSThread
 
+# from backupCamThread import BackupCamGpioThread
+
 
 
 class MainWindow(QMainWindow):
@@ -30,6 +32,7 @@ class MainWindow(QMainWindow):
         self.main_layout = QGridLayout()
         self.central_widget.setLayout(self.main_layout)
 
+        # Tabela ikonları için sınıf adlarını ve ikon yollarını eşleme
         self.class_name_to_icon = {
             "no_entry": "images/traffic-signs/no_entry.png",
             "forward_and_left": "images/traffic-signs/forward_and_left.png",
@@ -49,26 +52,34 @@ class MainWindow(QMainWindow):
 
 
 
-        # Kamera ve model
-        self.front_provider = FrameProviderThread(0)
-        self.rear_provider = FrameProviderThread(1)
-        self.model_sign = ModelSignThread("models/best.pt")
+        # ----------- Threadler -------- (ön kamera, geri görüş kamerası, tabela model ve GPS)
+
+        # self.front_provider_thread = FrameProviderThread(0)
+
+        # self.backup_cam_gpio_thread = BackupCamGpioThread(gpio_pin=11)
+        # self.backup_cam_gpio_thread = BackupCamGpioThread()
+
+        # self.model_sign_thread = ModelSignThread("models/best.pt")
+
+        # self.gps_thread = GPSThread()
+
+
+
+
+        # --------- Widgetlar -----------
 
         # Harita
         self.harita_widget = MapWidget()
-        self.harita_widget.update_gps(40.7880556,29.4569444)
+        self.harita_widget.update_gps(40.7866667,29.4550000)  # deneme amaçlı, kaldırılacak
         self.main_layout.addWidget(self.harita_widget, 0, 0, 3, 3)
 
         # Geri görüş
-        self.geri_gorus_widget = BackupCamWidget(self.rear_provider)
-        # self.geri_gorus_widget.start_camera()
+        self.geri_gorus_widget = BackupCamWidget()
         self.main_layout.addWidget(self.geri_gorus_widget, 0, 3, 3, 3)
 
         # Şerit uyarı
         self.serit_widget = LaneWarnWidget()
         self.lane_detection = LaneDetection()
-        # self.serit_widget.check_lane_position(30)  # Sol şeride yaklaşma
-        self.serit_widget.show()
         self.main_layout.addWidget(self.serit_widget, 3, 0, 2, 3)
 
         # Tabela widget
@@ -77,37 +88,42 @@ class MainWindow(QMainWindow):
 
         
 
-        # Connect
-        self.front_provider.frame_ready.connect(self.model_sign.update_frame)
-        self.model_sign.result_ready.connect(self.handle_signs)
+        # --------- Connect ----------
 
-        self.front_provider.frame_ready.connect(self.handle_lane_warning)
+        # self.front_provider_thread.frame_ready.connect(self.model_sign_thread.update_frame) # Ön kamera görüntüsünü tabela modeline gönder
+        # self.model_sign_thread.result_ready.connect(self.handle_signs) # Tabela modelinden çıkan sonuçları işleme al
 
-        # self.gps_thread = GPSThread()
-        # self.gps_thread.konum_guncelle.connect(self.harita_widget.update_gps)
+        # self.front_provider_thread.frame_ready.connect(self.handle_lane_warning) # Ön kamera görüntüsünü şerit uyarı modeline gönder
+
+        # self.gps_thread.konum_guncelle.connect(self.harita_widget.update_gps) # GPS konumunu haritada güncelle
+
+        # self.backup_cam_gpio_thread.reverse_changed.connect(self.handle_reverse_gear) # Geri görüş kamerası için geri vites değişimini dinle
+
+
+
+
+        # ----------- Thread Başlatma -----------
+
+        # self.front_provider_thread.start()
+        # self.model_sign_thread.start()
         # self.gps_thread.start()
-
-
-        self.front_provider.start()
-        self.model_sign.start()
-        
-
-        #geri vites
-        # self.rear_provider.start()
-
-    
+        # self.backup_cam_gpio_thread.start()        
 
 
 
+
+    # --------Fonksiyonlar----------
+
+    # Şerit uyarı mesajını güncelle
     def handle_lane_warning(self, frame):
         warning = self.lane_detection.process_frame(frame)
         self.serit_widget.uyari_label.setText(warning)
         
-
+    # class idlerine göre tabela ekleme
     def handle_signs(self, class_ids):
         for class_id in class_ids:
             try:
-                class_name = self.model_sign.model.model.names[int(class_id)]
+                class_name = self.model_sign_thread.model.model.names[int(class_id)]
                 print(class_name)
                 icon_path = self.class_name_to_icon.get(class_name)
                 if icon_path:
@@ -115,11 +131,22 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 print(f"Hata: {e}")
 
+    # Geri görüş kamerası için geri vites değişimini dinleme
+    def handle_reverse_gear(self, is_active):
+        if is_active:
+            print("Geri görüş açıldı")
+            self.geri_gorus_widget.start_camera()
+        else:
+            print("Geri görüş kapandı")
+            self.geri_gorus_widget.stop_camera()
 
+
+    # Pencere kapatıldığında threadleri durdurma
     def closeEvent(self, event):
-        self.front_provider.stop()
-        # self.rear_provider.stop()
-        self.model_sign.stop()
+        # self.front_provider_thread.stop()
+        # self.model_sign_thread.stop()
+        # self.gps_thread.stop()
+        # self.backup_cam_gpio_thread.stop()
         super().closeEvent(event)
 
 

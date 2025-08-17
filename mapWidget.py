@@ -34,7 +34,7 @@ class MapWidget(QWidget):
         self.map_label.setPixmap(self.map_pixmap)
         self.layout.addWidget(self.map_label)
 
-        # ➕ Lat/Lon bilgisi için label
+        # Lat/Lon bilgisi için label
         self.coord_label = QLabel(self)
         self.coord_label.setStyleSheet(
             "font-size: 18px; color: yellow; background-color: rgba(0,0,0,180); padding: 5px; border-radius: 5px")
@@ -42,7 +42,7 @@ class MapWidget(QWidget):
         self.layout.addWidget(self.coord_label)
 
 
-         # Harita köşeleri (sadece iki tanesi gerekiyor)
+        # Harita köşeleri (sadece iki tanesi gerekiyor)
         gps_top_left = (40.7883333, 29.4511111)
         gps_bottom_right = (40.7855555, 29.4577778)
 
@@ -77,4 +77,4 @@ class MapWidget(QWidget):
         self.map_label.setPixmap(temp_pixmap)
 
         #Konum label'ını güncelle
-        self.coord_label.setText(f"Lat: {lat:.6f}, Lon: {lon:.6f}")
+        self.coord_label.setText(f"Lat: {lat:.7f}, Lon: {lon:.7f}")

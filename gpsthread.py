@@ -16,6 +16,7 @@ class GPSThread(QThread):
                 print("GPS Hata:", e)
                 break
     
+    # GGA cümlesini ayrıştırma
     def parse_gga(self,sentence):
         try:
             parts = sentence.split(",")
